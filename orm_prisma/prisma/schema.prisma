@@ -1,7 +1,8 @@
 datasource datasource_postgres {
   provider = "postgresql"
-  url      = "postgresql://postgres:postgres@localhost:5432/fleet_db?schema=public"
-  //postgresql://USER:PASSWORD@HOST:PORT/DATABASE?KEY1=VALUE&KEY2=VALUE&KEY3=VALUE
+  url      = env("POSTGRES_DATABASE_URL")
+  // env -> POSTGRES_DATABASE_URL = postgresql://postgres:postgres@localhost:5432/fleet_db?schema=public
+  // postgresql://USER:PASSWORD@HOST:PORT/DATABASE?KEY1=VALUE&KEY2=VALUE&KEY3=VALUE
 }
 
 generator client {
@@ -16,34 +17,34 @@ model VehicleType {
 
 model Maintenance {
   id          Int             @id @default(autoincrement())
-  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id])
-  vehicleId   Int
   odometer    Int
   cost        Decimal
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id])
+  vehicleId   Int
   deletedAt   DateTime?
 }
 
 model Refuel {
   id          Int             @id @default(autoincrement())
-  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id])
-  vehicleId   Int
   volume      Int
   odometer    Int
   cost        Int
+  vehicle     Vehicle         @relation(fields: [vehicleId], references: [id])
+  vehicleId   Int
   deletedAt   DateTime?
 }
 
 model Vehicle {
   id            Int           @id @default(autoincrement())
-  plate         String?       @unique
+  plate         String?
   fleet         String
   odometer      Int?
+  maintenance   Maintenance[]
+  refuel        Refuel[]
   type          VehicleType   @relation(fields: [typeId], references: [id])
   typeId        Int
   user          User          @relation(fields: [userId], references: [id])
   userId        Int
-  maintenance   Maintenance[]
-  refuel        Refuel[]
   deletedAt     DateTime?
 }
 
