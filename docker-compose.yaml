@@ -1,0 +1,44 @@
+version: '3.1'
+networks:
+  backend:
+    ipam:
+      config:
+        - subnet: 172.19.0.1/16
+services:
+#Banco de dados destinado a persistência dos dados
+  database:
+    build: ./database
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: fleet_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - 5432:5432
+    networks:
+      backend:
+        ipv4_address: 172.19.0.2
+#Administração do banco em Web, com acesso em localhost:8080
+  adminer:
+    image: adminer
+    container_name: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - backend
+    depends_on:
+      - database
+
+  backend:
+    build: ./backend
+    container_name: backend
+    environment:
+      - POSTGRES_DATABASE_URL=postgresql://postgres:postgres@172.19.0.2:5432/fleet_db?schema=public
+    ports:
+      - 3000:3000
+    networks:
+      - backend
+    depends_on: 
+      - database
